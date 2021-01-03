@@ -21,6 +21,9 @@
     <ClCompile Include="Hash_42576.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
+    <ClCompile Include="StackQueue_42586.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Headers.h">
