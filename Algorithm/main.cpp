@@ -19,14 +19,79 @@ int StackQueue_42583();
 int Heap_42626();
 int Heap_42627();
 vector<int> Heap_42628();
+int Greedy_42862();
 
 int main()
 {
 	// write question function
-	auto answer = Heap_42628();
+	auto answer = Greedy_42862();
 
 	print(answer);
 	return 0;
+}
+
+
+/*
+// https://programmers.co.kr/learn/courses/30/lessons/42862?language=cpp
+// 요약: 도난당한 학생 본인에게 여벌이 있는 경우와 앞, 뒤 학생에게 여벌이 있는 경우를 계산해 vector에서 제거한다.
+// 모두 제거했을 때 lost vector에 남은 학생이 수업을 못 듣는 학생임으로 전체에서 그만큼 뺀다.
+// ** 전체 학생만큼의 배열을 미리 정의하고 그 안에 lost와 reserve 학생의 index에 값을 넣으면 1중 for문만으로 계산할 수 있다 **
+*/
+int Greedy_42862(int n, vector<int> lost, vector<int> reserve)
+{
+    int answer = 0;
+    bool found;
+    // 도난당한 학생 중 여벌이 있는 경우
+    for (auto i=lost.begin(); i != lost.end();)
+    {
+        found = false;
+        for (auto r=reserve.begin(); r != reserve.end();)
+        {
+            if ((*i) == (*r)) 
+            {
+                i = lost.erase(i);
+                r = reserve.erase(r);
+                found = true;
+                break;
+            }
+            else
+            {
+                r++;
+            }
+        }
+        if(!found)
+            i++;
+    }
+
+    // 도난당한 학생의 앞, 뒤 번호 학생에게 여벌이 있는 경우
+    for (auto i = lost.begin(); i != lost.end();)
+    {
+        found = false;
+        for (auto r = reserve.begin(); r != reserve.end();)
+        {
+            if (abs((*i) - (*r)) == 1)
+            {
+                i = lost.erase(i);
+                r = reserve.erase(r);
+                found = true;
+                break;
+            }
+            else
+            {
+                r++;
+            }
+        }
+        if(!found)
+            i++;
+    }
+
+    answer = n - lost.size();
+
+    return answer;
+}
+int Greedy_42862()
+{
+    return Greedy_42862(5, { 2,4 }, { 1,3,5 });
 }
 
 
@@ -35,6 +100,7 @@ int main()
 // 요약: priority_queue의 경우 back에 접근 및 삭제가 안되므로 2개의 priority_queue를 만들었다.
 // max 값의 경우는 바로 삭제하고 min 값의 경우 하나의 queue에서 마지막 값(최솟값)을 제외한 값을 다른 queue로 
 // 옮김으로써 최솟값 삭제 로직을 구현했다.
+// ** top과 bottom에 접근 및 삭제가 가능한 multiset을 쓰면 더 좋을 듯 하다 **
 */
 vector<int> Heap_42628(vector<string> operations) 
 {
@@ -205,6 +271,7 @@ int Heap_42626()
     return Heap_42626({ 1,2,3,9,10,12 }, 7);
 }
 
+
 /*
 // https://programmers.co.kr/learn/courses/30/lessons/42583?language=cpp
 // 요약: 다리를 Queue로 만들고 트럭 또는 공백(0)을 넣어 트럭의 위치까지 알 수 있게 했다.
@@ -256,6 +323,8 @@ int StackQueue_42583()
 // 문제 주제에 맞게 Queue를 사용하고 싶었으나 하루마다 progresses에 speeds를 더하는 과정에서
 // 계속 새로운 Queue에 넣는게 비효율적이라고 판단해 index 접근이 가능한 vector를 사용했다.
 // 다만 Queue의 성질을 이용하도록 pop()을 구현했다.
+// ** 하루씩 진행시키도 않아도 처음 시점에 각 progress들의 끝나는 날을 계산할 수 있으므로 
+// 이를 미리 계산해 놓으면 바로 배포시점으로 갈 수 있다 **
 */
 int queue_pop(vector<int>& queue)
 {
