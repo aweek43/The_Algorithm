@@ -20,11 +20,12 @@ int Heap_42626();
 int Heap_42627();
 vector<int> Heap_42628();
 int Greedy_42862();
+string Greedy_42883();
 
 int main()
 {
 	// write question function
-	auto answer = Greedy_42862();
+	auto answer = Greedy_42883();
 
 	print(answer);
 	return 0;
@@ -92,6 +93,40 @@ int Greedy_42862(int n, vector<int> lost, vector<int> reserve)
 int Greedy_42862()
 {
     return Greedy_42862(5, { 2,4 }, { 1,3,5 });
+}
+
+
+/*
+// https://programmers.co.kr/learn/courses/30/lessons/42883?language=cpp
+// 요약: 앞자리부터 가능한 범위 내에서 max인 값으로 결정한다.
+// max값 index의 앞부분은 결과에 포함되면 안되므로 삭제한다.
+*/
+string Greedy_42883(string number, int k)
+{
+    string answer = "";
+    int insert = number.length() - k;
+
+    for (;insert > 0; --insert)
+    {
+        char local_max = '0';
+        int max_idx = -1;
+        for (int i = 0; i <= number.length() - insert; ++i)
+        {
+            if ((number[i] - '0') > (local_max - '0')) // char to int
+            {
+                local_max = number[i];
+                max_idx = i;
+            }
+        }
+        answer += local_max;
+        number.replace(0, ++max_idx, "");
+    }
+
+    return answer;
+}
+string Greedy_42883()
+{
+    return Greedy_42883("4177252841", 4);
 }
 
 
