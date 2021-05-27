@@ -7,12 +7,14 @@
 #include <stack>
 #include <queue>
 #include <numeric>
+
 using namespace std;
 
 
 void print(string answer);
 void print(vector<int> answer);
 void print(int answer);
+
 string Hash_42576();
 vector<int> StackQueue_42586();
 int StackQueue_42583();
@@ -21,11 +23,14 @@ int Heap_42627();
 vector<int> Heap_42628();
 int Greedy_42862();
 string Greedy_42883();
+int Greedy_42885();
+int Greedy_42861();
+int Greedy_42884();
 
 int main()
 {
 	// write question function
-	auto answer = Greedy_42883();
+    auto answer = Greedy_42884();
 
 	print(answer);
 	return 0;
@@ -127,6 +132,125 @@ string Greedy_42883(string number, int k)
 string Greedy_42883()
 {
     return Greedy_42883("4177252841", 4);
+}
+
+
+/*
+// https://programmers.co.kr/learn/courses/30/lessons/42885?language=cpp
+// 요약: 몸무게를 sorting하고 가장 가벼운 사람과 가장 무거운 사람은 매칭한다.
+// 이 두명의 몸무게가 limit 이하면 둘이 구명보트를 태우고 아닌 경우 무거운 사람만 태운다.
+// 남은 사람 중에 다시 같은 방식으로 매칭하며 진행한다.
+*/
+int Greedy_42885(vector<int> people, int limit)
+{
+    int answer = 0;
+    sort(people.begin(), people.end());
+    int size = people.size();
+    int front = 0; // 가장 가벼운 사람
+    int back = size - 1; // 가장 무거운 사람
+    while (front < back)
+    {
+        if (people[front] + people[back] <= limit)
+        {
+            front++; back--;
+        }
+        else
+        {
+            back--;
+        }
+        answer++;
+    }
+    if (front == back)
+        answer++;
+
+    return answer;
+}
+int Greedy_42885()
+{
+    return Greedy_42885({ 70,80,50 }, 100);
+}
+
+
+/*
+// https://programmers.co.kr/learn/courses/30/lessons/42861?language=cpp
+// 요약: 크루스칼 알고리즘으로 푸려고 했으나 문제 카테고리가 greedy이기 때문에 프림 알고리즘을 선택했다.
+// 처음 임의의 한 섬을 선택한 후, 선택된 섬과 선택되지 않은 섬을 잇는 다리를 모두 고른다.
+// 고른 다리 중 비용이 최소인 다리와 그 다리가 연결된 섬을 선택한다.
+// 모든 섬이 선택될 때까지 반복한다.
+*/
+bool isInclude(vector<int> arr, int value)
+{
+    for (auto a : arr)
+    {
+        if (a == value)
+            return true;
+    }
+    return false;
+}
+int Greedy_42861(int n, vector<vector<int>> costs)
+{
+    int answer = 0;
+    vector<vector<int>> selected_path;
+    vector<int> selected_node;
+
+    selected_node.push_back(0);
+    while (selected_node.size() < n) // 모든 섬을 연결할 때까지 반복
+    {
+        vector<vector<int>> dist;
+        for (auto c : costs)
+        {
+            if ((isInclude(selected_node, c[0]) && !isInclude(selected_node, c[1])) || // 이미 선택된 것과 선택되지 않은 노드인 경우
+                (isInclude(selected_node, c[1]) && !isInclude(selected_node, c[0])))
+            {
+                dist.push_back(c);
+            }
+        }
+        auto min_node = min_element(dist.begin(), dist.end(), [](vector<int> a, vector<int> b) { return a[2] < b[2]; });
+        selected_path.push_back(*min_node);
+        if(!isInclude(selected_node, (*min_node)[1])) // 선택되지 않은 노드를 선택
+            selected_node.push_back((*min_node)[1]);
+        else
+            selected_node.push_back((*min_node)[0]);
+    }
+
+    for (auto s : selected_path)
+        answer += s[2];
+    return answer;
+}
+int Greedy_42861()
+{
+    return Greedy_42861(4, { {0, 1, 5},{1, 2, 3},{2, 3, 3},{1, 3, 2},{0, 3, 4} });
+}
+
+
+/*
+// https://programmers.co.kr/learn/courses/30/lessons/42884?language=cpp
+// 요약: 차량의 진출 지점을 기준으로 정렬한다. 카메라에 찍혔는지 체크할 벡터를 만든다.
+// 차량이 진출했을 때 카메라에 찍히지 않은 차량이면 그 위치에 카메라를 설치하고 해당 위치에 있는 차량들을
+// 카메라에 찍혔다고 셋팅한다.
+*/
+int Greedy_42884(vector<vector<int>> routes)
+{
+    int answer = 0;
+    vector<bool> meetCamera(routes.size(), false);
+    sort(routes.begin(), routes.end(), [](vector<int> a, vector<int> b) { return a[1] < b[1]; });
+    for (int i = 0; i < routes.size(); ++i)
+    {
+        if (meetCamera[i] == false)
+        {
+            answer++;
+            for (int ii = 0; ii < routes.size(); ++ii)
+            {
+                if (routes[ii][0] <= routes[i][1] && routes[ii][1] >= routes[i][1])
+                    meetCamera[ii] = true;
+            }
+        }
+    }
+    return answer;
+}
+int Greedy_42884()
+{
+    return Greedy_42884({ {-20, 15},{-14, -5},{-18, -13},{-5, -3} });
 }
 
 
