@@ -14,6 +14,7 @@ using namespace std;
 void print(string answer);
 void print(vector<int> answer);
 void print(int answer);
+void print(long long answer);
 
 string Hash_42576();
 vector<int> StackQueue_42586();
@@ -26,11 +27,17 @@ string Greedy_42883();
 int Greedy_42885();
 int Greedy_42861();
 int Greedy_42884();
+int DynamicProgramming_42895();
+int DynamicProgramming_43105();
+int DynamicProgramming_42898();
+int DynamicProgramming_42897();
+long long BinarySearch_43238();
+int BinarySearch_43236();
 
 int main()
 {
 	// write question function
-    auto answer = Greedy_42884();
+    auto answer = BinarySearch_43236();
 
 	print(answer);
 	return 0;
@@ -555,7 +562,288 @@ string Hash_42576()
     return Hash_42576({ "mislav", "stanko", "mislav", "ana" }, { "stanko", "ana", "mislav" });
 }
 
+
+/*
+// https://programmers.co.kr/learn/courses/30/lessons/42895?language=cpp
+// 요약: N을 i번 사용해 나올 수 있는 수는 a번 사용해 나온 수 집합과 b번 사용해 나온 수 집합끼리의 계산결과이다. (이때 i = a + b)
+// 따라서 i번 사용해 나온 수들을 저장하고 i+1번째 사용해 나온 수를 계산할 때 사용한다.
+// 이 때 8번 사용해 나온 수까지 계산하면 너무 오래 걸리므로 각 i마다 답이 나왔는지 체크한다.
+// 추가로, vector<set<int>>로 쓸 경우 같은 값이 중복되지 않아 좀더 효율적일 것으로 기대된다.
+*/
+int DynamicProgramming_42895(int N, int number)
+{
+    int answer = -1;
+    vector<vector<int>> cases(9);
+
+    for (int i = 1; i <= 8; ++i)
+    {
+        int num = N;
+        for (int _ = 1; _ < i; ++_) // 숫자 붙이기
+            num = 10 * num + N;
+        cases[i].push_back(num);
+
+        for (int one = 1; one < i; ++one) // 1 ~ i-1 번째까지의 집합끼리의 사칙연산 결과 저장
+        {
+            int other = i - one;
+            for (int m = 0; m < cases[one].size(); ++m)
+            {
+                for (int n = 0; n < cases[other].size(); ++n)
+                {
+                    cases[i].push_back(cases[one][m] + cases[other][n]);
+                    cases[i].push_back(cases[one][m] - cases[other][n]);
+                    cases[i].push_back(cases[one][m] * cases[other][n]);
+                    if(cases[other][n] != 0) // divide by zero 처리
+                        cases[i].push_back(cases[one][m] / cases[other][n]);
+                }
+            }
+        }
+
+        for (auto c : cases[i]) // 답이 있는지 확인
+        {
+            if (c == number)
+            {
+                return i;
+            }
+        }
+    }
+    
+    return answer;
+}
+int DynamicProgramming_42895()
+{
+    return DynamicProgramming_42895(5, 12);
+}
+
+
+/*
+// https://programmers.co.kr/learn/courses/30/lessons/43105?language=cpp
+// 요약: 트리의 가장 아래부터 2개 노드의 최댓값을 그 부모노드에 더한다.
+// 이렇게 계속 올라가면 결국 root노드가 거쳐간 숫자의 최댓값이 된다.
+*/
+int DynamicProgramming_43105(vector<vector<int>> triangle)
+{
+    int answer = 0;
+    int curDepth = triangle.size() - 1; // 가장 아래부터 돔
+    for (int i = curDepth - 1; i >= 0; --i)
+    {
+        for (int j = 0; j <= i; ++j)
+        {
+            triangle[i][j] += max(triangle[i + 1][j], triangle[i + 1][j+1]);
+        }
+    }
+
+    answer = triangle[0][0]; // 가장 상단이 최대값을 가짐
+    return answer;
+}
+int DynamicProgramming_43105()
+{
+    return DynamicProgramming_43105({ {7},{3, 8},{8, 1, 0},{2, 7, 4, 4},{4, 5, 2, 6, 5} });
+}
+
+
+/*
+// https://programmers.co.kr/learn/courses/30/lessons/42898?language=cpp
+// 요약: 항상 오른쪽 또는 아래로만 움직이므로 최단경로의 길이는 장애물이 없을 때와 동일하다.
+// 초기에 각 지점마다 최단경로의 수를 1로 셋팅하고 위, 왼쪽 지점의 수를 더해가며 해당 지점까지 최단경로의 수를 계산한다.
+// 장애물이 있는 지점은 0으로 셋팅하고 이어서 계산한다.
+*/
+int DynamicProgramming_42898(int m, int n, vector<vector<int>> puddles)
+{
+    int answer = 0;
+    vector<vector<int>> path(m, vector<int>(n, 1));
+
+    for (auto p : puddles) // puddle은 0으로 초기화
+    {
+        if (!p.size())
+            break;
+
+        if (p[0] == 1) // 1열 or 1행에 puddle이 있으면 이후 열or행 0으로 초기화
+        {
+            for (int i = p[1] - 1; i < n; ++i)
+            {
+                path[0][i] = 0;
+            }
+        }
+        else if (p[1] == 1)
+        {
+            for (int i = p[0] - 1; i < m; ++i)
+            {
+                path[i][0] = 0;
+            }
+        }
+        else
+        {
+            path[p[0] - 1][p[1] - 1] = 0;
+        }
+    }
+
+    for (int i = 1; i < m; ++i)
+    {
+        for (int j = 1; j < n; ++j)
+        {
+            if(path[i][j] != 0) // puddle이 아닌 경우
+            {
+                path[i][j] = (path[i-1][j] + path[i][j-1]) % 1000000007;
+            }
+        }
+    }
+
+    answer = path[m - 1][n - 1];
+    return answer;
+}
+int DynamicProgramming_42898()
+{
+    return DynamicProgramming_42898(3, 3, { {1, 3},{3, 1},{2, 3} });
+}
+
+
+/*
+// https://programmers.co.kr/learn/courses/30/lessons/42897?language=cpp
+// 요약: 문제를 최소단위로 쪼개면 (두번째 전의 집 + 현재 집)을 터는 경우와 (첫번째 전의 집)을 터는 경우로 나뉘어진다.
+// 이 두 경우 중 값이 큰쪽을 선택한다. 그 다음 계산때 이전의 계산 결과를 고려해 계산한다.
+// 주의할 점은 배열이 원형이기 때문에 마지막 집의 선택 여부에 따라 시작 지점이 달라지게 된다.
+// 마지막 집의 선택 여부를 처음에 알 수 없으므로 시작 지점의 case를 나눈다.
+// 최대 세번째 집부터 터는 경우의 수가 있으므로 첫번째, 두번째, 세번째 집부터 터는 case로 나눈다.
+// 하지만 첫번째 집부터 터는 경우는 두번째 집부터 터는 경우에서 고려되기 때문에 굳이 계산하지 않아도 된다.
+*/
+int DynamicProgramming_42897(vector<int> money)
+{
+    vector<int> answers;
+    int moneySize = money.size();
+
+    // 두번째 집부터 터는 경우
+    vector<int> dp(moneySize, 0);
+    dp[0] = money[0];
+    for (int i = 1; i < moneySize - 1; ++i)
+    {
+        int p_prev = i - 2;
+        int prev = i - 1;
+        if (i == 1) // 원형 고려
+        {
+            p_prev = moneySize - 1;
+        }
+
+        dp[i] = max((dp[p_prev] + money[i]), dp[prev]);
+    }
+    answers.push_back(dp[moneySize - 2]);
+
+    // 세번째 집부터 터는 경우
+    dp = vector<int>(moneySize, 0);
+    dp[1] = money[1];
+    for (int i = 2; i < moneySize; ++i)
+    {
+        int p_prev = i - 2;
+        int prev = i - 1;
+        dp[i] = max((dp[p_prev] + money[i]), dp[prev]);
+    }
+    answers.push_back(dp[moneySize - 1]);
+
+    return *max_element(answers.begin(), answers.end());
+}
+int DynamicProgramming_42897()
+{
+    return DynamicProgramming_42897({1,2,3,1});
+}
+
+/*
+// https://programmers.co.kr/learn/courses/30/lessons/43238?language=cpp
+// 요약: 정확히 어떻게 스케쥴을 짜야 최단 시간이 나오는지 구하는게 아닌 시간의 최소, 최댓값만 구하고
+// 이분탐색으로 가능한 최단 시간을 찾는 문제이다. 특정 시간에서 심사 시간을 나눈 몫이 해당 심사관이 그 시간에 심사할 수 있는 사람 수이다.
+// 다만 타입의 overflow 이슈로 모든 값들을 long long으로 형변환해서 사용해야 한다.
+*/
+long long BinarySearch_43238(int n, vector<int> times)
+{
+    long long min_ele = (*min_element(times.begin(), times.end()));
+
+    long long answer = (long long)n * min_ele;
+    long long left = min_ele;
+    long long right = (long long)n * min_ele; // BS 돌며 left와 더해질때 overflow 방지
+
+    while (left <= right)
+    {
+        long long people = 0;
+        long long mid = (left + right) / 2;
+
+        for (long long t : times)
+        {
+            // mid 시간 동안 모든 심사관이 심사했을 때 사람 수
+            people += (mid / t);
+
+            // 최종 people이 long long type을 넘을 수 있어 매 iterator마다 체크해야 함
+            if (people >= n) // n보다 크면 더 적은 시간으로 심사 가능
+            {
+                answer = mid;
+                right = mid - 1;
+                break;
+            }
+        }
+
+        if (people < n) // n보다 작으면 더 많은 시간이 필요함
+        {
+            left = mid + 1;
+        }
+    }
+
+    return answer;
+}
+long long BinarySearch_43238()
+{
+    return BinarySearch_43238(2, {1, 2});
+}
+
+
+/*
+// https://programmers.co.kr/learn/courses/30/lessons/43236?language=cpp
+// 요약: 최소, 최댓값을 정하고 이분탐색으로 돌 사이의 거리가 최대 중간값을 넘지 않도록 돌을 제거한다.
+// 제거된 돌의 개수가 n보다 클 경우 중간값 이상으로는 최소값을 가질 수 없으므로 중간값 이하부터 다시 탐색한다.
+// 제거된 돌의 개수가 n보다 작은 경우 n만큼 제거해도 해당 값을 최소값으로 가질 수 있으므로 정답이 될 수 있다.
+*/
+int BinarySearch_43236(int distance, vector<int> rocks, int n)
+{
+    int answer = 0;
+    sort(rocks.begin(), rocks.end());
+    rocks.push_back(distance); // 도착 지점 추가
+    int left = 0;
+    int right = distance;
+
+    while (left <= right)
+    {
+        int prev = 0; // 시작 지점
+        int count = 0;
+        int mid = (left + right) / 2;
+        for (auto r : rocks)
+        {
+            if (r - prev <= mid)
+            {
+                count++;
+            }
+            else
+            {
+                prev = r;
+            }
+        }
+
+        if (count > n)
+        {
+            right = mid - 1;
+        }
+        else
+        {
+            left = mid + 1;
+            answer = mid + 1;
+        }
+    }
+
+    return answer;
+}
+int BinarySearch_43236()
+{
+    return BinarySearch_43236(25, { 2,14,11,21,17 }, 2);
+}
+
+
 // print function overloading
 void print(int answer) { cout << answer << endl; }
+void print(long long answer) { cout << answer << endl; }
 void print(string answer) { cout << answer << endl; }
 void print(vector<int> answer) { for (int ans : answer) cout << ans << endl; }
